@@ -5,13 +5,16 @@ This sketch was written to work as a refrigerator controller. It was used to rep
 a mini-fridge. I used a waterproof DS18B20 digital temp sensor to monitor the temp in the fridge. An 8 amp SSR was
 used to turn the fridge compressor on/off.
 
-Important to note is the Sleep state. The mechanics of refrigerators prevent the compressor 
-from turning back on to quickly. The manual for the fridge stated to wait a minimum of 3 min. after unplugging the fridge to
-plug it back in. If you tried to turn the fridge on too soon the thermal protection circuit in the fridge would trip
-after ~1 min. To error on the side of caution I wrote the sketch to go to "sleep" for 5 min. after the system detected
-desired temp. was reached.
+Important to note is the Sleep state. The mechanics of refrigerators prevent the compressor from turning back on to 
+quickly. Basically, after the compressor has run the pressure in the system needs to equalize before the compressor can 
+start again because the compressor is not strong enough to start against the high pressure produced when the fridge was 
+running. You can try to start it, but the compressor will heat up and eventually trip the overload circuit. The manual 
+for the fridge I'm using stated to wait a minimum of 3 min after unplugging the fridge to plug it back in. To error on 
+the side of caution I wrote the sketch to go to "sleep" for 5 min after the system detected desired temp was reached. 
+For the same reason the initial boot state is the Sleep state, in case the reboot was caused by a power outage/brownout 
+that occurred while the compressor was running.
 
-Please note that this sketch requires severl libraries to function which I've included in the repository. You may want to
+Please note that this sketch requires several libraries to function which I've included in the repository. You may want to
 check for updated version though.
 
 Wire.h - is included with the Arduino IDE.
@@ -38,10 +41,10 @@ All code (except external libraries and third party code) is published under the
 #define S_Sleep 1
 #define S_SetTemp 2
 
-int state = S_Monitor; // Inital state
+int state = S_Sleep; // Initial state
 
 // DS18B20 setup
-#define TempSensor 10 // PIN one wire device (temps sensor) is pluggend into
+#define TempSensor 10 // PIN one wire device (temps sensor) is plugged into
 OneWire oneWire(TempSensor);
 // Pass the OneWire reference to Dallas Temperature sensor
 DallasTemperature sensors(&oneWire);
@@ -59,7 +62,7 @@ int FridgeRly = 8;
 unsigned long Sleep = 0;
 unsigned long SleepLength = 300000; // How long we wait before we try to cool the fridge again. To keep from overheating we need to wait at least 3 min
 
-float SetTemp = 35.00; // The defualt temp that we want the fride to be at
+float SetTemp = 35.00; // The default temp that we want the fridge to be at
 float TempC = 0;
 float TempF = 0;
 
@@ -99,11 +102,6 @@ void F_Monitor() {
   button.attachPress(F_ButtonPress);
   button.tick();
   
-  if (Boot == true) { 
-    Sleep = millis();
-    state = S_Sleep;
-  }
-  
   if (TempF <= SetTemp) { 
     lcd.setCursor(0, 1);
     lcd.print("Monitoring...   ");
@@ -114,15 +112,11 @@ void F_Monitor() {
   F_ShowTemp();
   
   if (TempF > SetTemp) { 
+    digitalWrite(FridgeRly, HIGH); // Turn on the compressor
     lcd.setCursor(0, 1);
-    lcd.print("Coolng to: ");
+    lcd.print("Coolng to: "); // "Coolng" is not a spelling error, not enough room on the screen for the "i"
     lcd.print(SetTemp);
-    digitalWrite(FridgeRly, HIGH);
     CoolRun = true;
-  }
-  
-  else {
-    digitalWrite(FridgeRly, LOW);
   }
   
   if (CoolRun == true && TempF <= SetTemp) { 
@@ -131,11 +125,11 @@ void F_Monitor() {
   }
 }
 
-void F_Sleep() {
+void F_Sleep() { 
   button.attachPress(F_ButtonPress);
   button.tick();
   
-  digitalWrite(FridgeRly, LOW);
+  digitalWrite(FridgeRly, LOW); // Shut off the compressor
   
   lcd.setCursor(0, 1);
   lcd.print("Sleeping...     ");
@@ -146,7 +140,6 @@ void F_Sleep() {
   
   if (millis() - Sleep > SleepLength) {
     CoolRun = false; 
-    Boot = false;
     state = S_Monitor;
   }
 }
@@ -182,9 +175,9 @@ void F_ButtonPress2() {
 void F_GetTemp() {
   sensors.requestTemperatures(); // Tell the sensor to record the temp to its memory
   
-  TempC = sensors.getTempCByIndex(0); // Retriev the temp from the sensor's memory and stor it in a local var
+  TempC = sensors.getTempCByIndex(0); // Retrieve the temp from the sensor's memory and store it in a local var
   
-  TempF = (TempC * 9.0)/ 5.0 + 32.0; // Convert to ferenheiht
+  TempF = (TempC * 9.0)/ 5.0 + 32.0; // Convert to fahrenheit
 }
 
 void F_ShowTemp() {
@@ -192,5 +185,6 @@ void F_ShowTemp() {
   lcd.print("Temp: "); 
   lcd.print(TempF);
   lcd.print("F    ");
+  
   //Serial.print(TempF); Serial.println(" degrees F"); // For testing comment out in production
 }
