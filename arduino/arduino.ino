@@ -64,6 +64,7 @@ float TempC = 0;
 float TempF = 0;
 
 bool CoolRun = false;
+bool Boot = true;
 
 void setup() {
   lcd.begin(16, 2); // Set up the LCD's number of rows and columns
@@ -73,7 +74,7 @@ void setup() {
   // PIN Modes
   pinMode(FridgeRly, OUTPUT);
     
-  Serial.begin(9600); // For testing comment out in production
+  //Serial.begin(9600); // For testing comment out in production
 }
 
 void loop() {
@@ -97,6 +98,11 @@ void loop() {
 void F_Monitor() {
   button.attachPress(F_ButtonPress);
   button.tick();
+  
+  if (Boot == true) { 
+    Sleep = millis();
+    state = S_Sleep;
+  }
   
   if (TempF <= SetTemp) { 
     lcd.setCursor(0, 1);
@@ -129,6 +135,8 @@ void F_Sleep() {
   button.attachPress(F_ButtonPress);
   button.tick();
   
+  digitalWrite(FridgeRly, LOW);
+  
   lcd.setCursor(0, 1);
   lcd.print("Sleeping...     ");
 
@@ -138,6 +146,7 @@ void F_Sleep() {
   
   if (millis() - Sleep > SleepLength) {
     CoolRun = false; 
+    Boot = false;
     state = S_Monitor;
   }
 }
