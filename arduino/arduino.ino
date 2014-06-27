@@ -192,5 +192,5 @@ void F_ShowTemp() {
   lcd.print("Temp: "); 
   lcd.print(TempF);
   lcd.print("F    ");
-  Serial.print(TempF); Serial.println(" degrees F"); // For testing comment out in production
+  //Serial.print(TempF); Serial.println(" degrees F"); // For testing comment out in production
 }
