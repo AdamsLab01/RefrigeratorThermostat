@@ -60,7 +60,7 @@ int FridgeRly = 8;
 
 // Vars
 unsigned long Sleep = 0;
-unsigned long SleepLength = 300000; // How long we wait before we try to cool the fridge again. To keep from overheating we need to wait at least 3 min
+unsigned long SleepLength = 900000; // How long we wait before we try to cool the fridge again.
 
 float SetTemp = 35.00; // The default temp that we want the fridge to be at
 float TempC = 0;
