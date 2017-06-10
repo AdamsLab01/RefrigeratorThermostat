@@ -20,5 +20,3 @@ OneWire.h - can be downloaded from here: http://www.pjrc.com/teensy/td_libs_OneW
 DallasTemperature.h - can be downloaded from here: http://www.milesburton.com/?title=Dallas_Temperature_Control_Library 
 
 For more information see - https://adambyers.com/2014/06/refrigerator-controller/ or ping adam@adambyers.com
-
-All code (except external libraries and third party code) is published under the MIT License.
