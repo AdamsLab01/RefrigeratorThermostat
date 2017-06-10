@@ -91,7 +91,7 @@ void loop() {
     break;
     
     case S_SetTemp:
-      F_SetTemp();
+      //F_SetTemp();
     break;
   }
 }
